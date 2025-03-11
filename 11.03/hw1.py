@@ -37,15 +37,44 @@ def get_longest_diverse_words(file_path: str) -> List[str]:
     
     return sorted_words[:10] # Возвращаем первые 10 слов из отсортированного списка
 
-'''
+
 def get_rarest_char(file_path: str) -> str:
-    ...
+    
+    with open(file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+    
+    counts = {}
+    for ch in text:
+        if ch in counts:
+            counts[ch] += 1
+        else:
+            counts[ch] = 1
+    
+    rarest = None
+    min_count = None
+    for ch in counts:
+        if min_count is None or counts[ch] < min_count:
+            min_count = counts[ch]
+            rarest = ch
+        elif counts[ch] == min_count and ch < rarest:
+            rarest = ch
+    return rarest
 
 
 def count_punctuation_chars(file_path: str) -> int:
-    ...
+    
+    with open(file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+    
+    count = 0
+    for ch in text:
+        if ch in string.punctuation:
+            count += 1
+    return count
 
 
+
+'''
 def count_non_ascii_chars(file_path: str) -> int:
     ...
 
