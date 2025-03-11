@@ -73,12 +73,18 @@ def count_punctuation_chars(file_path: str) -> int:
     return count
 
 
+def count_non_ascii_chars(file_path: str) -> int:
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+    
+    count = 0
+    for ch in text:
+        if ord(ch) > 127:
+            count += 1
+    return count
 
 '''
-def count_non_ascii_chars(file_path: str) -> int:
-    ...
-
-
 def get_most_common_non_ascii_char(file_path: str) -> str:
     ...
 
