@@ -15,23 +15,27 @@ from collections.abc import Sequence
 def check_fibonacci(data: Sequence[int]) -> bool:
     if not data:
         return False
-    if len(data) >= 1 and data[0] != 0:
+    
+    if len(data) >= 1 and data[0] != 0: #проверка что длина списка больше 1 и что не начинается с 0
         return False
-    if len(data) >= 2 and data[1] != 1:
+    
+    if len(data) >= 2 and data[1] != 1: #проверка что длина списка больше 2 и второй элемент не = 1
         return False
-    for i in range(2, len(data)):
+    
+    for i in range(2, len(data)):       
         if data[i] != data[i-1] + data[i-2]:
             return False
+        
     return True
 
 
-#проверка
+#проверка работы кода
 
 testdata = [4,6,43,43,6,4,6]
 testdata_check = check_fibonacci(testdata)
-print(testdata_check) #false
+print(testdata_check) #выдаст false
 
 
 testdata = [0, 1, 1, 2, 3, 5, 8, 13, 21]
 testdata_check = check_fibonacci(testdata)
-print(testdata_check) #true
+print(testdata_check) #выдаст true
