@@ -1,96 +1,68 @@
 import sqlite3
 
 class TableData:
-    """
-    Обёртка для таблицы SQLite, реализующая протокол коллекций.
-    При каждом обращении к данным выполняется SQL-запрос, поэтому данные всегда актуальны.
-    """
     def __init__(self, database_name: str, table_name: str):
         self.database_name = database_name
         self.table_name = table_name
 
-    def __len__(self):
-        # Получаем количество записей в таблице
-        conn = sqlite3.connect(self.database_name)
-        cursor = conn.cursor()
-        query = "SELECT COUNT(*) FROM " + self.table_name
-        cursor.execute(query)
-        result = cursor.fetchone()
-        conn.close()
-        if result is not None:
-            return result[0]
-        return 0
+    def __len__(self) -> int:
+        """Возвращает количество записей в таблице"""
+        with sqlite3.connect(self.database_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT COUNT(*) FROM {self.table_name}")
+            return cursor.fetchone()[0]
 
-    def __getitem__(self, key: str):
-        # Получаем запись, где столбец name равен key
-        conn = sqlite3.connect(self.database_name)
-        conn.row_factory = sqlite3.Row  # чтобы можно было обращаться к колонкам по имени
-        cursor = conn.cursor()
-        query = "SELECT * FROM " + self.table_name + " WHERE name = ?"
-        cursor.execute(query, (key,))
-        row = cursor.fetchone()
-        conn.close()
-        if row is None:
-            raise KeyError("Запись с именем '" + key + "' не найдена.")
-        # Преобразуем sqlite3.Row в обычный словарь
-        row_dict = {}
-        for col in row.keys():
-            row_dict[col] = row[col]
-        return row_dict
+    def __getitem__(self, key: str) -> dict:
+        """Возвращает запись по ключу (поле name)"""
+        with sqlite3.connect(self.database_name) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute(
+                f"SELECT * FROM {self.table_name} WHERE name = ?", 
+                (key,)
+            )
+            row = cursor.fetchone()
+            if not row:
+                raise KeyError(f"Запись '{key}' не найдена")
+            return dict(row)
 
-    def __contains__(self, key: str):
-        # Проверяем, существует ли запись с указанным name
-        conn = sqlite3.connect(self.database_name)
-        cursor = conn.cursor()
-        query = "SELECT COUNT(*) FROM " + self.table_name + " WHERE name = ?"
-        cursor.execute(query, (key,))
-        result = cursor.fetchone()
-        conn.close()
-        if result is not None and result[0] > 0:
-            return True
-        return False
+    def __contains__(self, key: str) -> bool:
+        """Проверяет наличие записи по ключу"""
+        with sqlite3.connect(self.database_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                f"SELECT 1 FROM {self.table_name} WHERE name = ?", 
+                (key,)
+            )
+            return bool(cursor.fetchone())
 
     def __iter__(self):
-        # Итератор, который возвращает записи по одной, не загружая всю таблицу в память
-        conn = sqlite3.connect(self.database_name)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        query = "SELECT * FROM " + self.table_name
-        cursor.execute(query)
-        row = cursor.fetchone()
-        while row is not None:
-            row_dict = {}
-            for col in row.keys():
-                row_dict[col] = row[col]
-            yield row_dict
-            row = cursor.fetchone()
-        conn.close()
+        """Итератор по всем записям таблицы"""
+        with sqlite3.connect(self.database_name) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT * FROM {self.table_name}")
+            for row in cursor:
+                yield dict(row)
 
-
-# Пример использования:
+# Пример использования
 if __name__ == "__main__":
-    # Предполагаем, что база данных example.sqlite содержит таблицу books с колонками name и author,
-    # и в таблице хранятся следующие записи:
-    #   name: Farenheit 451, Brave New World, 1984
-    #   author: Bradbury, Huxley, Orwell
-    books = TableData(database_name='example.sqlite', table_name='books')
-    
-    print("Количество книг в базе данных:", len(books))
-    
-    # Попытка получить запись для книги "1984"
+    # Подключаемся к базе данных
+    db = TableData("example.sqlite", "books")
+
+    # Получаем количество записей
+    print(f"Всего книг: {len(db)}")
+
+    # Получаем книгу по названию
     try:
-        book = books['1984']
-        print("Запись для книги '1984':", book)
+        print("Информация о книге '1984':", db["1984"])
     except KeyError as e:
         print(e)
-    
-    # Проверяем наличие книги "Farenheit 451"
-    if 'Farenheit 451' in books:
-        print("'Farenheit 451' присутствует в базе данных.")
-    else:
-        print("'Farenheit 451' отсутствует в базе данных.")
-    
-    # Выводим все книги из таблицы
-    print("Список всех книг:")
-    for record in books:
-        print("Название:", record['name'], "| Автор:", record['author'])
+
+    # Проверяем наличие книги
+    print("Есть ли 'Мастер и Маргарита'?", "Мастер и Маргарита" in db)
+
+    # Выводим все книги
+    print("\nВсе книги:")
+    for book in db:
+        print(f"{book['name']} ({book['author']})")
