@@ -7,16 +7,35 @@ Given a file containing text. Complete using only default collections:
     5) Find most common non ascii char for document
 """
 from typing import List
+import string
 
-file_path = "11.03\\data.txt"
+file_path = "C:\\Users\\Lordreid\\Documents\\data_science_farpost\\11.03\\data.txt"
 
 def get_longest_diverse_words(file_path: str) -> List[str]:
-    with open(file_path, 'r', encoding='utf-8') as file:
-        text = file.read()
-    words = text.split()
-    # Sort by number of unique characters (descending), then by word length (descending)
-    sorted_words = sorted(words, key=lambda x: (-len(set(x)), -len(x)))
-    return sorted_words[:10]
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+    
+    words = text.split()# Разбиваем текст на слова по пробелам
+    
+    clean_words = []# Очищаем слова от знаков пунктуации
+    for word in words:
+        clean_word = word.strip(string.punctuation)
+        if clean_word != "":
+            clean_words.append(clean_word)
+    
+    def key_func(word): #сначала количество уникальных символов, потом длина слова
+        unique_chars = 0
+        for ch in word:
+            if ch not in []:
+                pass
+
+        unique_chars = len(set(word))
+        return (unique_chars, len(word))
+    
+    sorted_words = sorted(clean_words, key=key_func, reverse=True) # Сортируем слова, сначала по количеству уникальных символов, потом по длинне
+    
+    return sorted_words[:10] # Возвращаем первые 10 слов из отсортированного списка
 
 '''
 def get_rarest_char(file_path: str) -> str:
@@ -36,4 +55,8 @@ def get_most_common_non_ascii_char(file_path: str) -> str:
 
 '''
 
-get_longest_diverse_words(file_path)
+'''
+Символы юникода в ответе исправлю позже
+'''
+
+print("ТОП 10 Самые длинные слова: ", get_longest_diverse_words(file_path))
