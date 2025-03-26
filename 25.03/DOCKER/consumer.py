@@ -19,6 +19,6 @@ while True:
     if message:
         # Декодируем байты в строку и вставляем в MySQL
         text = message[1].decode('utf-8')
-        cursor.execute("INSERT INTO messages (message) VALUES (%s)", (text,))
+        cursor.execute("INSERT INTO messages (message) VALUES (%s)", (str(text),))
         db.commit()
-        print(f"Inserted: {text}")
+        print(f"Inserted: {text}")        

@@ -13,3 +13,20 @@ services:
       MYSQL_DATABASE: mydatabase
     ports:
       - "3306:3306"
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8123:8123"  # HTTP-интерфейс (для запросов через REST)
+      - "9000:9000"  # Native TCP-интерфейс (для клиентов и приложений)
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse  # Сохранение данных
+    environment:
+      - CLICKHOUSE_DB=mydatabase             # Имя БД (опционально)
+      - CLICKHOUSE_USER=user                 # Логин (если нужен)
+      - CLICKHOUSE_PASSWORD=password         # Пароль (если нужен)
+    # Дополнительные настройки (опционально):
+    # - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1  # Разрешить управление правами
+
+volumes:
+  mysql_data:         # Том для MySQL (уже был в вашем файле)
+  clickhouse_data:    # Том для ClickHouse (добавьте эту строку)
